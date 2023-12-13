@@ -1,7 +1,7 @@
 services:
   action:
-    image: infra-blocks/github-action-typescript-template
+    image: infra-blocks/git-tag-semver-action
     build:
       context: ./
       dockerfile: Dockerfile
-    container_name: tag-tag-semver-action
+    container_name: git-tag-semver-action

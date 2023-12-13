@@ -31,6 +31,7 @@ export class GitTagSemverHandler implements Handler<GitTagSemverOutputs> {
   }
 
   async handle(): Promise<GitTagSemverOutputs> {
+    await this.whitelistGitRepository();
     const latestTag = await this.getLatestTag();
     const tags = getVersionTags({
       currentVersion: latestTag,
@@ -40,6 +41,25 @@ export class GitTagSemverHandler implements Handler<GitTagSemverOutputs> {
     return {
       tags: JSON.stringify(tags),
     };
+  }
+
+  private async whitelistGitRepository() {
+    core.debug("whitelisting /github/workspace as safe git directory");
+    /*
+    Configure git to work with repos that are shared through volume in actions runtime.
+    This is done here, at runtime as opposed to the docker image because the $HOME folder is overridden as a
+    shared volume at runtime. It looks from the docs that it could be merged and not completely lost, we'll
+    have to test.
+
+    TODO: test setting that up in the image.
+     */
+    await this.git.run([
+      "config",
+      "--global",
+      "--add",
+      "safe.directory",
+      "/github/workspace",
+    ]);
   }
 
   private async getLatestTag(): Promise<string> {
